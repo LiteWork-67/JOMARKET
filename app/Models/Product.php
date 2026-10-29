@@ -105,6 +105,21 @@ class Product extends Model
         return $locale === 'ar' ? ($this->name_ar ?: $this->name_en) : ($this->name_en ?: $this->name_ar);
     }
 
+    public function getTitleArAttribute(): string
+    {
+        return $this->name_ar;
+    }
+
+    public function getTitleEnAttribute(): string
+    {
+        return $this->name_en;
+    }
+
+    public function getPrimaryImageUrlAttribute(): ?string
+    {
+        return $this->main_image_url;
+    }
+
     public function getDescriptionAttribute(): ?string
     {
         $locale = app()->getLocale();

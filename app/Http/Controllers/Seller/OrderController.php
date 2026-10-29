@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\UpdateOrderStatusRequest;
+use App\Models\CashOnDeliveryReconciliation;
 use App\Models\FinancialLedgerEntry;
 use App\Models\OrderStatusHistory;
 use App\Models\SellerOrder;
@@ -113,6 +114,19 @@ class OrderController extends Controller
                         'description' => "Earnings for order #{$order->order_number} (Subtotal: {$order->subtotal} JOD, Commission: -{$order->commission_amount} JOD)",
                         'created_by' => auth()->id(),
                     ]);
+                }
+
+                // If parent order was Cash on Delivery, ensure COD Reconciliation entry exists
+                if ($order->parentOrder->payment_method === 'cash_on_delivery') {
+                    CashOnDeliveryReconciliation::firstOrCreate(
+                        ['seller_order_id' => $order->id],
+                        [
+                            'courier_name' => $order->courier_name ?? 'Local Delivery Express',
+                            'amount_collected' => $order->total_amount,
+                            'status' => 'collected_by_courier',
+                            'collected_at' => now(),
+                        ]
+                    );
                 }
             }
 

@@ -76,6 +76,11 @@ class SellerOffer extends Model
         return max(0, $this->stock_quantity - $this->reserved_quantity);
     }
 
+    public function getSkuAttribute(): ?string
+    {
+        return $this->seller_sku;
+    }
+
     public function getEffectivePriceAttribute(): float
     {
         if ($this->sale_price !== null && (float) $this->sale_price > 0 && (float) $this->sale_price < (float) $this->price) {

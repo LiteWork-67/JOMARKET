@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\SellerOffer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -80,6 +81,144 @@ class CartService
         }
 
         return $item;
+    }
+
+    public function updateQuantity(int $itemId, int $quantity): ?CartItem
+    {
+        $cart = $this->getActiveCart();
+        $item = $cart->items()->find($itemId);
+
+        if (! $item) {
+            return null;
+        }
+
+        if ($quantity <= 0) {
+            $item->delete();
+
+            return null;
+        }
+
+        $offer = $item->offer;
+        $allowedQuantity = min($offer->available_stock, $quantity);
+
+        $item->update([
+            'quantity' => $allowedQuantity,
+            'unit_price' => $offer->effective_price,
+        ]);
+
+        return $item;
+    }
+
+    public function removeItem(int $itemId): bool
+    {
+        $cart = $this->getActiveCart();
+        $item = $cart->items()->find($itemId);
+
+        if ($item) {
+            $item->delete();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function applyCoupon(string $code): array
+    {
+        $cart = $this->getActiveCart();
+        $cleanCode = strtoupper(trim($code));
+
+        $coupon = Coupon::where('code', $cleanCode)->where('is_active', true)->first();
+
+        if (! $coupon || ! $coupon->isValidForAmount($cart->subtotal)) {
+            return [
+                'success' => false,
+                'message' => __('messages.invalid_coupon'),
+            ];
+        }
+
+        Session::put('applied_coupon_code', $coupon->code);
+
+        return [
+            'success' => true,
+            'coupon' => $coupon,
+            'discount' => $coupon->calculateDiscount($cart->subtotal),
+            'message' => __('messages.coupon_applied'),
+        ];
+    }
+
+    public function removeCoupon(): void
+    {
+        Session::forget('applied_coupon_code');
+    }
+
+    public function getAppliedCoupon(): ?Coupon
+    {
+        $code = Session::get('applied_coupon_code');
+        if (! $code) {
+            return null;
+        }
+
+        $cart = $this->getActiveCart();
+        $coupon = Coupon::where('code', $code)->where('is_active', true)->first();
+
+        if (! $coupon || ! $coupon->isValidForAmount($cart->subtotal)) {
+            Session::forget('applied_coupon_code');
+
+            return null;
+        }
+
+        return $coupon;
+    }
+
+    public function getTotals(?string $governorate = null): array
+    {
+        $cart = $this->getActiveCart();
+        $subtotal = $cart->subtotal;
+
+        if ($subtotal <= 0) {
+            return [
+                'subtotal' => 0.000,
+                'shipping' => 0.000,
+                'discount' => 0.000,
+                'total' => 0.000,
+                'coupon' => null,
+            ];
+        }
+
+        // Free delivery on orders over 50 JOD across Jordan!
+        if ($subtotal >= 50.000) {
+            $shipping = 0.000;
+        } else {
+            $govLower = strtolower($governorate ?? '');
+            if ($govLower === 'amman' || $governorate === 'عمّان') {
+                $shipping = 2.000;
+            } elseif (! empty($governorate)) {
+                $shipping = 3.000;
+            } else {
+                $shipping = 2.000;
+            }
+        }
+
+        $coupon = $this->getAppliedCoupon();
+        $discount = $coupon ? $coupon->calculateDiscount($subtotal) : 0.000;
+
+        $total = max(0, round($subtotal + $shipping - $discount, 3));
+
+        return [
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
+            'discount' => $discount,
+            'total' => $total,
+            'coupon' => $coupon,
+        ];
+    }
+
+    public function clear(): void
+    {
+        $cart = $this->getActiveCart();
+        $cart->items()->delete();
+        $this->removeCoupon();
     }
 
     public function getItemsCount(): int

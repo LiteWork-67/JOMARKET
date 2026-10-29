@@ -125,8 +125,8 @@
                                     <p class="font-bold text-stone-900">{{ auth()->user()->name }}</p>
                                     <p class="text-stone-500 truncate">{{ auth()->user()->email }}</p>
                                 </div>
-                                <a href="#" class="block px-4 py-2 text-stone-700 hover:bg-stone-50 font-medium">{{ __('messages.my_account') }}</a>
-                                <a href="#" class="block px-4 py-2 text-stone-700 hover:bg-stone-50 font-medium">{{ __('messages.my_orders') }}</a>
+                                <a href="{{ route('account.dashboard') }}" class="block px-4 py-2 text-stone-700 hover:bg-stone-50 font-medium">{{ __('messages.my_account') }}</a>
+                                <a href="{{ route('account.orders') }}" class="block px-4 py-2 text-stone-700 hover:bg-stone-50 font-medium">{{ __('messages.my_orders') }}</a>
                                 @if(auth()->user()->isSeller())
                                     <a href="{{ route('seller.dashboard') }}" class="block px-4 py-2 text-amber-600 hover:bg-amber-50 font-bold border-t border-stone-100">{{ __('messages.seller_dashboard') }}</a>
                                 @else
@@ -135,7 +135,7 @@
                                 @if(auth()->user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-red-600 hover:bg-red-50 font-bold border-t border-stone-100">{{ __('messages.admin_panel') }}</a>
                                 @endif
-                                <form method="POST" action="#" class="border-t border-stone-100">
+                                <form method="POST" action="{{ route('logout') }}" class="border-t border-stone-100">
                                     @csrf
                                     <button type="submit" class="w-full text-start px-4 py-2 text-stone-600 hover:bg-stone-50 font-medium">{{ __('messages.logout') }}</button>
                                 </form>
@@ -143,8 +143,8 @@
                                 <div class="px-4 py-3 border-b border-stone-100 text-center">
                                     <p class="font-bold text-stone-900 mb-1">أهلاً بك في جوردن مارت</p>
                                     <p class="text-stone-500 mb-3">سجّل الدخول لتجربة تسوق مخصصة</p>
-                                    <a href="#" class="inline-block w-full py-2 px-3 bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold rounded-lg transition-colors text-center shadow-xs">{{ __('messages.sign_in') }}</a>
-                                    <a href="#" class="inline-block w-full mt-2 py-1.5 px-3 border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium rounded-lg transition-colors text-center">{{ __('messages.register') }}</a>
+                                    <a href="{{ route('login') }}" class="inline-block w-full py-2 px-3 bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold rounded-lg transition-colors text-center shadow-xs">{{ __('messages.sign_in') }}</a>
+                                    <a href="{{ route('register') }}" class="inline-block w-full mt-2 py-1.5 px-3 border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium rounded-lg transition-colors text-center">{{ __('messages.register') }}</a>
                                 </div>
                             @endauth
                         </div>
@@ -273,6 +273,7 @@
     <!-- Main Content Area -->
     <main class="flex-1">
         @yield('content')
+        {{ $slot ?? '' }}
     </main>
 
     <!-- Comprehensive E-Commerce Footer -->

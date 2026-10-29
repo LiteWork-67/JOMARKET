@@ -1,4 +1,4 @@
-<a href="#" class="relative flex items-center gap-2 p-2 rounded-xl bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-800 transition-colors shrink-0 group">
+<a href="{{ route('cart.index') }}" class="relative flex items-center gap-2 p-2 rounded-xl bg-stone-100 hover:bg-amber-100 hover:text-amber-900 text-stone-800 transition-colors shrink-0 group">
     <div class="relative">
         <svg class="w-6 h-6 text-stone-700 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
